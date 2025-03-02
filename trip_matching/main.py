@@ -76,15 +76,11 @@ def main(show_visualizations=False, save_visualizations=False):
     ):
         print(f"{i+1}. {feature}: {importance:.4f}")
 
-    # Generate visualizations if requested
     if show_visualizations or save_visualizations:
         print("\nGenerating match table visualizations...")
-        match_figures = visualize_match_tables(
-            top_matches, new_trucks_df, new_shipment_df
-        )
+        match_figures = visualize_match_tables(top_matches, new_shipment_df)
 
         if save_visualizations:
-            # Save match table figures
             for i, fig in enumerate(match_figures):
                 fig.savefig(
                     f"match_table_shipment_{i+1}.png", dpi=300, bbox_inches="tight"

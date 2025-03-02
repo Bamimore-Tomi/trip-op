@@ -61,9 +61,6 @@ def select_features_for_model(historical_df):
         X: Feature matrix
         y: Target vector
     """
-    # Select only the 8 features we're using in the simplified model
-    # Since our historical data now only contains necessary columns,
-    # we just need to separate features from target
     features = historical_df.drop(columns=["match_score"])
     target = historical_df["match_score"]
 

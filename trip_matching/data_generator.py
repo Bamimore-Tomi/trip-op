@@ -73,15 +73,12 @@ def generate_shipments(num_shipments=100, days=7):
     Returns:
         DataFrame containing shipment data
     """
-    np.random.seed(48)  # Different seed for variation
     random.seed(70)
 
     locations = generate_locations()
 
-    # Generate shipment data
     shipments = []
     for i in range(num_shipments):
-        # Randomly select pickup and delivery locations
         pickup_loc = random.choice(locations)
         delivery_loc = random.choice([loc for loc in locations if loc != pickup_loc])
 
@@ -93,9 +90,8 @@ def generate_shipments(num_shipments=100, days=7):
         )  # Rough conversion to km
         estimated_trip_hours = round(
             estimated_distance_km / 110 * (1 + random.uniform(-0.2, 0.4)), 1
-        )  # Assuming 50 km/h average
+        )  # Assuming 110 km/h average
 
-        # Generate random delivery window
         hours_from_now = random.randint(2, days * 24)
         delivery_deadline = datetime.now() + timedelta(hours=hours_from_now)
 
@@ -138,12 +134,10 @@ def naive_score(
     Returns:
         Match score from 0-100
     """
-    # Define component scores (0-100 scale for each factor)
 
     # 1. Capacity Utilization Score
-    # Reward utilization up to 100%, then penalize for exceeding capacity
     if capacity_utilization <= 1.0:
-        # Linear increase up to 100%
+
         capacity_score = capacity_utilization * 100
     else:
         # Penalize by 8 points for each percentage point over 100%
@@ -153,28 +147,23 @@ def naive_score(
     driver_hours_score = 100 if driver_hours_sufficient else 0
 
     # 3. Distance Score - Stronger exponential decay for more differentiation
-    # Using exponential decay to more strongly penalize longer distances
     distance_score = 100 * (0.95**distance_to_pickup_km)
 
-    # For high-priority shipments, make distance even more important
+    # For high-priority shipments, make distance more important
     if priority == "High":
-        # Apply a more aggressive scoring for high priority shipments
         distance_score = 100 * (0.98**distance_to_pickup_km)
-        # This ensures that shorter distances have a much stronger advantage
 
-    # 4. Maintenance Score - INVERTED (1 is BEST, 3 is WORST)
-    # Convert from 1-3 scale (where 1 is best) to 0-100 scale
+    # 4. Maintenance Score (1 is best, 3 is worst)
     maintenance_score_normalized = (4 - maintenance_score) / 3 * 100
 
     # Define fixed weights for all distances
     weights = {
         "capacity": 0.25,
-        "distance": 0.40,  # Distance is now the dominant factor
+        "distance": 0.40,
         "maintenance": 0.20,
         "driver_hours": 0.15,
     }
 
-    # Calculate weighted score
     final_score = (
         capacity_score * weights["capacity"]
         + distance_score * weights["distance"]
@@ -195,7 +184,6 @@ def generate_historical_matches(num_matches=500):
     Returns:
         DataFrame containing historical match data with outcomes
     """
-    np.random.seed(44)  # Different seed for variation
     random.seed(30)
 
     # Generate historical matching data with outcomes for training
@@ -265,15 +253,13 @@ def generate_prediction_data(num_trucks=10, num_shipments=1):
     Returns:
         Tuple of DataFrames (new_trucks_df, new_shipments_df)
     """
-    # Use different random seeds for new data
-    np.random.seed(99)
     random.seed(99)
 
     # Generate new trucks and shipments
     new_trucks_df = generate_trucks(num_trucks)
     new_shipments_df = generate_shipments(num_shipments, days=3)
 
-    # Rename IDs to make it clear these are new
+    # Rename IDs
     new_trucks_df["truck_id"] = [f"NT{i+1:03d}" for i in range(len(new_trucks_df))]
     new_shipments_df["shipment_id"] = [
         f"NS{i+1:03d}" for i in range(len(new_shipments_df))

@@ -7,7 +7,7 @@ This module provides a function to visualize match results using matplotlib tabl
 import matplotlib.pyplot as plt
 
 
-def visualize_match_tables(top_matches, new_trucks_df, new_shipment_df):
+def visualize_match_tables(top_matches, new_shipment_df):
     """
     Create table visualizations of truck-shipment matches
 
@@ -23,26 +23,21 @@ def visualize_match_tables(top_matches, new_trucks_df, new_shipment_df):
     grouped_by_shipment = top_matches.groupby("shipment_id")
     figures = []
 
-    # Define colors for different values
     score_colors = {
-        "high": "#99ff99",  # Light green for high scores
-        "medium": "#ffff99",  # Light yellow for medium scores
-        "low": "#ff9999",  # Light red for low scores
+        "high": "#99ff99",
+        "medium": "#ffff99",
+        "low": "#ff9999",
     }
 
     # For each shipment, create a separate figure with a table
     for shipment_id, group in grouped_by_shipment:
-        # Get shipment details
         shipment = new_shipment_df[new_shipment_df["shipment_id"] == shipment_id].iloc[
             0
         ]
-
-        # Sort by match_score descending
         matches = group.sort_values("match_score", ascending=False).reset_index(
             drop=True
         )
 
-        # Prepare table data
         table_data = []
         for _, match in matches.iterrows():
             table_data.append(
@@ -63,7 +58,6 @@ def visualize_match_tables(top_matches, new_trucks_df, new_shipment_df):
                 ]
             )
 
-        # Create figure and axes for this shipment
         fig = plt.figure(figsize=(10, len(matches) * 0.5 + 2))
         ax = fig.add_subplot(111)
         ax.axis("off")
@@ -95,12 +89,10 @@ def visualize_match_tables(top_matches, new_trucks_df, new_shipment_df):
             "Maintenance\nScore",
         ]
 
-        # Create the table
         table = ax.table(
             cellText=table_data, colLabels=col_labels, loc="center", cellLoc="center"
         )
 
-        # Style the table
         table.auto_set_font_size(False)
         table.set_fontsize(10)
         table.scale(1, 1.5)
