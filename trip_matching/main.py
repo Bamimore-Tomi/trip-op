@@ -18,12 +18,7 @@ from trip_matching.data_generator import (
 )
 from trip_matching.feature_engineering import create_features, select_features_for_model
 from trip_matching.model import predict_matches, train_matching_model
-from trip_matching.visualization import (
-    plot_business_impact,
-    plot_feature_importance,
-    plot_match_quality_metrics,
-    plot_match_score_distribution,
-)
+from trip_matching.visualization import visualize_match_tables
 
 
 def main(show_visualizations=False, save_visualizations=False):
@@ -84,17 +79,17 @@ def main(show_visualizations=False, save_visualizations=False):
 
     # Generate visualizations if requested
     if show_visualizations or save_visualizations:
-        print("\nGenerating visualizations...")
-        fig1 = plot_feature_importance(model, X.columns)
-        fig2 = plot_match_score_distribution(historical_df)
-        fig3 = plot_match_quality_metrics(historical_df)
-        fig4 = plot_business_impact({})
+        print("\nGenerating match table visualizations...")
+        match_figures = visualize_match_tables(
+            top_matches, new_trucks_df, new_shipment_df
+        )
 
         if save_visualizations:
-            fig1.savefig("feature_importance.png", dpi=300, bbox_inches="tight")
-            fig2.savefig("match_score_distribution.png", dpi=300, bbox_inches="tight")
-            fig3.savefig("match_quality_metrics.png", dpi=300, bbox_inches="tight")
-            fig4.savefig("business_impact.png", dpi=300, bbox_inches="tight")
+            # Save match table figures
+            for i, fig in enumerate(match_figures):
+                fig.savefig(
+                    f"match_table_shipment_{i+1}.png", dpi=300, bbox_inches="tight"
+                )
 
         if show_visualizations:
             plt.show()

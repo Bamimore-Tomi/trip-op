@@ -35,7 +35,7 @@ def generate_trucks(num_trucks=50):
         DataFrame containing truck data
     """
     np.random.seed(42)
-    random.seed(49)
+    random.seed(50)
 
     locations = generate_locations()
 
@@ -74,7 +74,7 @@ def generate_shipments(num_shipments=100, days=7):
         DataFrame containing shipment data
     """
     np.random.seed(48)  # Different seed for variation
-    random.seed(48)
+    random.seed(70)
 
     locations = generate_locations()
 
@@ -116,91 +116,166 @@ def generate_shipments(num_shipments=100, days=7):
 
     return pd.DataFrame(shipments)
 
-
-def naive_score(
-    capacity_utilization, driver_hours_sufficient, distance_to_pickup_km, priority
-):
     """
     Calculate a match score between a truck and shipment based on multiple factors
+    
+    Args:
+        capacity_utilization: Ratio of shipment weight to truck capacity
+        driver_hours_sufficient: Boolean indicating if driver has enough hours
+        distance_to_pickup_km: Distance from truck to pickup location in km
+        priority: Priority of the shipment ('High', 'Medium', 'Low')
+        maintenance_score: Maintenance status score (higher is better)
+        
+    Returns:
+        Match score from a 0-100 scale
+    """
+    # Base score
+    base_score = 40
+
+    # ---------- DISTANCE-DEPENDENT SCORING LOGIC ----------
+    # For long distances (>100km), maintenance becomes highest priority
+    is_long_distance = distance_to_pickup_km > 100
+
+    # ---------- MAINTENANCE SCORE ----------
+    # Maximum possible points: 30 points if long distance, 15 points if short distance
+    max_maintenance_points = 30 if is_long_distance else 15
+
+    # Assuming maintenance_score is on a scale (e.g., 1-3, where 3 is best)
+    # Normalize to get score between 0-1
+    maintenance_max = 3  # Assuming max maintenance score is 3
+    normalized_maintenance = maintenance_score / maintenance_max
+    maintenance_points = max_maintenance_points * normalized_maintenance
+
+    # ---------- CAPACITY UTILIZATION ----------
+    # Maximum possible points: 25 points if long distance, 35 points if short distance
+    max_capacity_points = 25 if is_long_distance else 35
+    capacity_points = 0
+
+    # Optimal utilization range (60-90%)
+    if 0.6 <= capacity_utilization <= 0.9:
+        # Maximum score at optimal point (75%)
+        optimal_point = 0.75
+        distance_from_optimal = abs(capacity_utilization - optimal_point)
+
+        # Score decreases as we move away from optimal point
+        capacity_points = max_capacity_points * (1 - (distance_from_optimal / 0.15))
+    elif capacity_utilization > 0.9:
+        # Above optimal range - score decreases as we approach 100%
+        over_ratio = (1.0 - capacity_utilization) / 0.1  # How far into 90-100% range
+        capacity_points = (max_capacity_points * 0.6) * max(0, over_ratio)
+    else:
+        # Below optimal range - score increases linearly as we approach 60%
+        capacity_points = (capacity_utilization / 0.6) * (max_capacity_points * 0.4)
+
+    # ---------- DISTANCE TO PICKUP ----------
+    # Maximum possible points: 20 points if long distance, 30 points if short distance
+    max_distance_points = 20 if is_long_distance else 30
+
+    # Adjust distance impact based on priority
+    priority_distance_multipliers = {
+        "High": 1.2,  # Higher impact for high priority
+        "Medium": 1.0,  # Standard impact
+        "Low": 0.8,  # Lower impact
+    }
+
+    # Get the priority multiplier (default to medium if not found)
+    priority_multiplier = priority_distance_multipliers.get(priority, 1.0)
+
+    # Calculate distance score - non-linear scaling
+    if distance_to_pickup_km <= 100:
+        distance_points = max_distance_points
+    else:
+        # For long distances, score decreases more gradually
+        # Better maintenance score compensates for longer distances
+        distance_score_decay = ((distance_to_pickup_km - 100) / 500) ** 0.7
+        distance_points = max(0, max_distance_points * (1 - distance_score_decay))
+
+    # Apply priority multiplier
+    distance_points *= priority_multiplier
+
+    # ---------- DRIVER HOURS SUFFICIENCY ----------
+    # Maximum impact: 15 points
+    driver_hours_points = 15 if driver_hours_sufficient else 0
+
+    # ---------- COMPUTE FINAL SCORE ----------
+    final_score = (
+        base_score
+        + capacity_points
+        + distance_points
+        + maintenance_points
+        + driver_hours_points
+    )
+
+    # Ensure score stays within 0-100 range
+    return max(0, min(100, final_score))
+
+
+def naive_score(
+    capacity_utilization,
+    driver_hours_sufficient,
+    distance_to_pickup_km,
+    priority,
+    maintenance_score,
+):
+    """
+    Calculate a match score using a simplified weight-based approach that doesn't
+    differentiate between long and short distances.
 
     Args:
         capacity_utilization: Ratio of shipment weight to truck capacity
         driver_hours_sufficient: Boolean indicating if driver has enough hours
         distance_to_pickup_km: Distance from truck to pickup location in km
         priority: Priority of the shipment ('High', 'Medium', 'Low')
+        maintenance_score: Maintenance status score (1-3, where 1 is BEST)
 
     Returns:
         Match score from 0-100
     """
-    # Base score with some random variation
-    base_score = 50 + random.uniform(-10, 10)
+    # Define component scores (0-100 scale for each factor)
 
-    # ----- Priority-based factor weights -----
-    # Define how much each factor matters based on priority
-    factor_weights = {
-        "High": {
-            "distance": 1.0,  # Full impact of distance for high priority
-            "capacity": 0.6,  # Reduced importance of capacity for high priority
-            "driver_hours": 1.0,  # Full impact of driver hours for high priority
-        },
-        "Medium": {
-            "distance": 0.7,  # Medium impact of distance
-            "capacity": 0.9,  # Higher importance of capacity
-            "driver_hours": 0.8,  # Slightly reduced driver hours impact
-        },
-        "Low": {
-            "distance": 0.4,  # Low impact of distance
-            "capacity": 1.0,  # Full impact of capacity for low priority
-            "driver_hours": 0.7,  # Lower driver hours impact
-        },
+    # 1. Capacity Utilization Score
+    # Reward utilization up to 100%, then penalize for exceeding capacity
+    if capacity_utilization <= 1.0:
+        # Linear increase up to 100%
+        capacity_score = capacity_utilization * 100
+    else:
+        # Penalize by 8 points for each percentage point over 100%
+        capacity_score = max(0, 100 - (capacity_utilization - 1.0) * 800)
+
+    # 2. Driver Hours Score (binary)
+    driver_hours_score = 100 if driver_hours_sufficient else 0
+
+    # 3. Distance Score - Stronger exponential decay for more differentiation
+    # Using exponential decay to more strongly penalize longer distances
+    distance_score = 100 * (0.95**distance_to_pickup_km)
+
+    # For high-priority shipments, make distance even more important
+    if priority == "High":
+        # Apply a more aggressive scoring for high priority shipments
+        distance_score = 100 * (0.98**distance_to_pickup_km)
+        # This ensures that shorter distances have a much stronger advantage
+
+    # 4. Maintenance Score - INVERTED (1 is BEST, 3 is WORST)
+    # Convert from 1-3 scale (where 1 is best) to 0-100 scale
+    maintenance_score_normalized = (4 - maintenance_score) / 3 * 100
+
+    # Define fixed weights for all distances
+    weights = {
+        "capacity": 0.25,
+        "distance": 0.40,  # Distance is now the dominant factor
+        "maintenance": 0.20,
+        "driver_hours": 0.15,
     }
 
-    # Get weights for the current priority (default to medium if not found)
-    weights = factor_weights.get(priority, factor_weights["Medium"])
+    # Calculate weighted score
+    final_score = (
+        capacity_score * weights["capacity"]
+        + distance_score * weights["distance"]
+        + maintenance_score_normalized * weights["maintenance"]
+        + driver_hours_score * weights["driver_hours"]
+    )
 
-    # ----- Capacity utilization scoring -----
-    # Target capacity range (ideal utilization)
-    min_target_capacity = 0.6
-    max_target_capacity = 0.9
-
-    # Calculate capacity score (higher is better)
-    capacity_score = 0
-
-    if (
-        capacity_utilization >= min_target_capacity
-        and capacity_utilization <= max_target_capacity
-    ):
-        # Ideal range - full capacity score
-        capacity_score = 25
-    elif capacity_utilization > max_target_capacity:
-        # Over target but not over capacity - partial score
-        # Score reduces as we approach 100% capacity
-        over_ratio = (1.0 - capacity_utilization) / (1.0 - max_target_capacity)
-        capacity_score = 25 * max(0, over_ratio)
-    else:
-        # Under target - score based on how close we are to target
-        under_ratio = capacity_utilization / min_target_capacity
-        capacity_score = 25 * under_ratio
-
-    # Apply priority weight to capacity score
-    base_score += capacity_score * weights["capacity"]
-
-    # ----- Driver hours penalty -----
-    if not driver_hours_sufficient:
-        driver_penalty = 15 * weights["driver_hours"]
-        base_score -= driver_penalty
-
-    # ----- Distance penalty -----
-    # Calculate distance penalty
-    # Higher distances create exponentially higher penalties
-    distance_factor = (
-        distance_to_pickup_km / 30
-    ) ** 1.7  # Power function for non-linear scaling
-    distance_penalty = min(25, distance_factor * 15) * weights["distance"]
-    base_score -= distance_penalty
-
-    # Ensure score stays within 0-100 range
-    return max(0, min(100, base_score))
+    return final_score
 
 
 def generate_historical_matches(num_matches=500):
@@ -244,6 +319,7 @@ def generate_historical_matches(num_matches=500):
             row["driver_hours_sufficient"],
             row["distance_to_pickup_km"],
             row["priority"],
+            row["maintenance_status_score"],
         ),
         axis=1,
     )
