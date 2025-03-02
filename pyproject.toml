@@ -1,0 +1,34 @@
+[project]
+name = "trip_matching"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "tomi.bamimore",email = "tomibami2020@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "isort (>=6.0.1,<7.0.0)"
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^1.5.0"
+numpy = "^1.23.0"
+scikit-learn = "^1.1.0"
+matplotlib = "^3.6.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0.0"
+black = "^22.8.0"
+flake8 = "^5.0.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+trip-matcher = "trip_matching.main:main"
+
+[tool.isort]
+profile = "black"
