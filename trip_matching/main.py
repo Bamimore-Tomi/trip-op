@@ -61,7 +61,8 @@ def main(show_visualizations=False, save_visualizations=False):
         for rank, row in enumerate(trucks, 1):
             print(
                 f"{rank:<5}{row['truck_id']:<10}{row['match_score']:.1f}{'':<10}\
-                {row['distance_to_pickup_km']:.1f} km{'':<5}{row['capacity_utilization']:.1%}{'':<5}{'Yes' if row['driver_hours_sufficient'] else 'No'}"
+                {row['distance_to_pickup_km']:.1f} km{'':<5}{row['capacity_utilization']:.1%}\
+                {'':<5}{'Yes' if row['driver_hours_sufficient'] else 'No'}"
             )
 
     # Show feature importance
@@ -103,4 +104,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    main(show_visualizations=args.visualize, save_visualizations=args.save)
     main(show_visualizations=args.visualize, save_visualizations=args.save)
