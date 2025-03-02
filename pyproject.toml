@@ -35,3 +35,8 @@ trip-matcher = "trip_matching.main:main"
 
 [tool.isort]
 profile = "black"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
