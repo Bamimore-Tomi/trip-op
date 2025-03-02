@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="${PATH}:/root/.local/bin"
 
@@ -16,10 +17,10 @@ COPY pyproject.toml poetry.lock* /app/
 
 RUN poetry config virtualenvs.create false
 
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --no-root --no-interaction --no-ansi
 
 COPY trip_matching/ /app/trip_matching/
-COPY main.py /app/
+COPY tests/ /app/tests/
 
 RUN mkdir -p /app/output
 
@@ -27,6 +28,6 @@ ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV MPLBACKEND="Agg"
 
-WORKDIR /app/output
+WORKDIR /app
 
-ENTRYPOINT ["python", "/app/main.py", "--save"]
+ENTRYPOINT ["python", "/app/trip_matching/main.py", "--save"]

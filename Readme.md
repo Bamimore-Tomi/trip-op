@@ -31,6 +31,11 @@ poetry install
 poetry run trip-matcher
 ```
 
+```bash
+docker build -t truq-trip-matching .
+docker run -v $(pwd)/output:/app/output truq-trip-matching
+```
+
 ## Project Structure
 
 ```
