@@ -5,8 +5,6 @@ This module handles the creation of features for machine learning models
 by transforming raw truck and shipment data.
 """
 
-from datetime import datetime
-
 import numpy as np
 import pandas as pd
 

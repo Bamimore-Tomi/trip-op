@@ -5,8 +5,6 @@ This module provides a function to visualize match results using matplotlib tabl
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.gridspec import GridSpec
 
 
 def visualize_match_tables(top_matches, new_trucks_df, new_shipment_df):

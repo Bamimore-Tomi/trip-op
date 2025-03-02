@@ -5,11 +5,8 @@ This module provides the entry point for the ML-based trip matching system.
 """
 
 import argparse
-from datetime import datetime, timedelta
 
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 
 # Import local modules
 from trip_matching.data_generator import (
@@ -63,7 +60,8 @@ def main(show_visualizations=False, save_visualizations=False):
 
         for rank, row in enumerate(trucks, 1):
             print(
-                f"{rank:<5}{row['truck_id']:<10}{row['match_score']:.1f}{'':<10}{row['distance_to_pickup_km']:.1f} km{'':<5}{row['capacity_utilization']:.1%}{'':<5}{'Yes' if row['driver_hours_sufficient'] else 'No'}"
+                f"{rank:<5}{row['truck_id']:<10}{row['match_score']:.1f}{'':<10}\
+                {row['distance_to_pickup_km']:.1f} km{'':<5}{row['capacity_utilization']:.1%}{'':<5}{'Yes' if row['driver_hours_sufficient'] else 'No'}"
             )
 
     # Show feature importance

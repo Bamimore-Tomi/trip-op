@@ -13,7 +13,7 @@ TruQ faced significant challenges in efficiently matching available trucks with 
 
 ## Solution
 
-This prototype demonstrates the core ML system I developed as a Research Engineer in collaboration with our Data Science team to solve TruQ's truck-shipment matching challenge.
+This prototype demonstrates the core ML system I developed in collaboration with our Data Science team to solve TruQ's truck-shipment matching challenge.
 
 The system uses a machine learning model to predict optimal matches between available trucks and pending shipments based on multiple features:
 
@@ -46,7 +46,7 @@ tr-presentation/
 - Increased truck utilization from 60% to 80%
 - Improved daily trips per truck from 2 to 3
 - Reduced unserviced customer requests from 20% to 8%
-- Generated approximately $150K in additional annual revenue
+- Generated approximately $15K in additional monthly revenue
 - Decreased dispatcher workload by 40%
 
 ## Demo

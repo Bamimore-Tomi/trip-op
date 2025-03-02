@@ -8,7 +8,7 @@ for truck-shipment matches.
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -56,7 +56,7 @@ def train_matching_model(X, y, n_estimators=100, random_state=42, test_size=0.2)
     ).sort_values(by="Importance", ascending=False)
 
     # Print a summary of the model
-    print(f"\nModel Training Results:")
+    print("\nModel Training Results:")
     print(f"R² on training set: {train_score:.3f}")
     print(f"R² on test set: {test_score:.3f}")
     print(f"RMSE on test set: {rmse:.3f}")
