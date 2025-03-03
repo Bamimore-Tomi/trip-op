@@ -131,7 +131,6 @@ def visualize_match_tables(top_matches, new_shipment_df):
             else:
                 distance_cell.set_facecolor(score_colors["low"])
 
-            # Color utilization cell
             util_cell = table._cells[(row_idx, 3)]
             util_value = float(row[3].strip("%")) / 100
             if 0.6 <= util_value <= 0.9:
@@ -141,7 +140,6 @@ def visualize_match_tables(top_matches, new_shipment_df):
             else:
                 util_cell.set_facecolor(score_colors["low"])
 
-            # Color hours sufficient cell
             hours_cell = table._cells[(row_idx, 4)]
             hours_cell.set_facecolor(
                 score_colors["high"] if row[4] == "Yes" else score_colors["low"]

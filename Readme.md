@@ -2,15 +2,6 @@
 
 An ML-based system for optimizing truck-shipment matching in middle-mile logistics.
 
-## Business Problem
-
-TruQ faced significant challenges in efficiently matching available trucks with pending shipments:
-
-- Low truck utilization rate of only 60%
-- Each truck completing just 2 trips per day (vs. target of 3)
-- Inability to service 20% of customer requests due to inefficient asset allocation
-- High operational costs and missed revenue opportunities (~$200K annually)
-
 ## Solution
 
 This prototype demonstrates the core ML system I developed in collaboration with our Data Science team to solve TruQ's truck-shipment matching challenge.
@@ -28,7 +19,7 @@ The system uses a machine learning model to predict optimal matches between avai
 
 ```bash
 poetry install
-poetry run trip-matcher
+poetry run trip-matcher -v
 ```
 
 ```bash
@@ -46,14 +37,6 @@ tr-presentation/
     └── main.py
 ```
 
-## Business Impact
-
-- Increased truck utilization from 60% to 80%
-- Improved daily trips per truck from 2 to 3
-- Reduced unserviced customer requests from 20% to 8%
-- Generated approximately $15K in additional monthly revenue
-- Decreased dispatcher workload by 40%
-
 ## Demo
 
 The main.py file demonstrates:
@@ -65,3 +48,19 @@ The main.py file demonstrates:
 5. Selection and presentation of the best matches
 
 This prototype serves as a simplified version of the production system deployed at TruQ.
+
+## Metrics
+
+R2 coefficient of determination tracks "our model captures X% of what makes a good truck-shipment match"
+RMSE = 10 would mean your predicted match scores are, on average, 10 points off from the true optimal score
+
+1. distance_to_pickup_km: 0.6872
+2. driver_hours_sufficient: 0.2006
+3. maintenance_status_score: 0.0897
+4. priority_high: 0.0134
+5. capacity_utilization: 0.0045
+
+## Test Run
+
+![image info](./pictures/figure1.png)
+![image info](./pictures/figure2.png)
